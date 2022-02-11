@@ -2,24 +2,25 @@ import pandas as pd
 import os
 from pathlib2 import Path
 import glob
-import datetime
 from datetime import date, datetime, time
 
 
 
 
 #import latest data to be converted. This is df1
-path = os.getcwd() + "\*.xlsx"
+#need string, not directory, for glob to work.
+path = os.getcwd() + "\\input\\" + "*.xlsx"
 print(path)
 list_of_files = glob.glob(path) # * means all if need specific format then *.csv
 latest_file = max(list_of_files, key=os.path.getmtime)
 #read latest xlsx file in directory.
+print(f"latest file: {latest_file}")
 df1 = pd.read_excel(latest_file, skiprows=3)
 print("df1:")
 df1.info()
 
 #import answer df2.
-second_path = os.getcwd() + "\samples\*.xlsx"
+second_path = os.getcwd() + "\\samples\\" + "2021-01-06 CastLight update example.xlsx"
 list_of_files = glob.glob(second_path)
 answer_template_path = max(list_of_files, key=os.path.getmtime)
 print(answer_template_path)
@@ -62,7 +63,7 @@ df2 = pd.DataFrame(columns=[
 'close_date',
 'minimum_age',
 ])
-print(df2.head())
+
 
 #xfer fields
 h_and_h_location = [f"NYC Health + Hospitals/{x}" for x in df1['Location']]
@@ -70,18 +71,18 @@ h_and_h_location = [f"NYC Health + Hospitals/{x}" for x in df1['Location']]
 df2['site_name'] = h_and_h_location
 #df2= df2.assign('site_name'= lambda x: )
 def convert_borough_to_county(boro):
-    boro = str.strip(boro)
-    if boro == "Manhattan":
+    boro = str.strip(boro).lower()
+    if boro == "manhattan":
         return "New York"
-    elif boro == "Brooklyn":
+    elif boro == "brooklyn":
         return "Kings"
-    elif boro == "Queens":
+    elif boro == "queens":
         return "Queens"
-    elif boro == "Bronx":
+    elif boro == "bronx":
         return "Bronx"
-    elif boro == "Staten Island":
+    elif boro == "staten island":
         return "Richmond"
-    elif boro == "Flushing":
+    elif boro == "flushing":
         return "Queens"
     else:
         raise Exception(f"{boro} is not a borough!")
@@ -114,13 +115,16 @@ df2['guidelines'] = df1['Test Type']
 
 #days of the week
 #get the date on the sheet
-this_date = pd.read_excel(latest_file, nrows=1, header=None)[4]
+this_date = pd.read_excel(latest_file, nrows=1, header=None)[3]
 this_date = this_date[0]
 #find the monday of the week.
-year, week_num, day_of_week = this_date.isocalendar()
+#parsed_date = datetime.strptime(this_date, "%m/%d/%Y")
+parsed_date = this_date
+year, week_num, day_of_week = parsed_date.isocalendar()
 
 #assign variables mapping the days to dates
-dates_dict =  {
+'''
+dates_dict_bak =  {
     'monday': datetime.date.fromisocalendar(year, week_num, 1),
     'tuesday':datetime.date.fromisocalendar(year, week_num, 2),
     'wednesday': datetime.date.fromisocalendar(year, week_num, 3),
@@ -128,7 +132,18 @@ dates_dict =  {
     'friday': datetime.date.fromisocalendar(year, week_num, 5),
     'saturday': datetime.date.fromisocalendar(year, week_num, 6),
     'sunday': datetime.date.fromisocalendar(year, week_num, 7)
-}      
+}
+'''
+
+dates_dict = {
+    'monday': pd.Timestamp.fromisocalendar(year, week_num, 1).strftime('%Y-%m-%d'),
+    'tuesday':pd.Timestamp.fromisocalendar(year, week_num, 2).strftime('%Y-%m-%d'),
+    'wednesday': pd.Timestamp.fromisocalendar(year, week_num, 3).strftime('%Y-%m-%d'),
+    'thursday': pd.Timestamp.fromisocalendar(year, week_num, 4).strftime('%Y-%m-%d'),
+    'friday': pd.Timestamp.fromisocalendar(year, week_num, 5).strftime('%Y-%m-%d'),
+    'saturday': pd.Timestamp.fromisocalendar(year, week_num, 6).strftime('%Y-%m-%d'),
+    'sunday': pd.Timestamp.fromisocalendar(year, week_num, 7).strftime('%Y-%m-%d')      
+}
 #parse the start and end date from the sheet.
 start_dates = df1['Start Date']
 end_dates = df1['End Date']
@@ -137,7 +152,8 @@ def find_range(start_date, end_date):
     delta = end_date - start_date
     date_range = []
     for i in range(delta.days + 1):
-        day = start_date + datetime.timedelta(days=i)
+        #day = start_date + datetime.timedelta(days=i)
+        day = start_date + pd.Timedelta(days=i)
         day = day.isoformat()
         day = day[0:10]
         date_range.append(day)
@@ -198,4 +214,6 @@ df2["cost_of_test"] = 0.0
 
 #print("df2")
 print(df2.info())
-pd.to_csv(df, f"mobile_testing_sites_{this_date}.csv")
+output_path = os.path.join(os.getcwd(), "output", f"mobile_testing_sites_{this_date.strftime('%Y-%m-%d')}.csv")
+
+df2.to_csv(output_path)

@@ -5,7 +5,7 @@ import glob
 import datetime
 from datetime import date, datetime, time, timedelta
 
-
+'''
 print(f"pandas version: {pd.__version__}")
 bundle_dir = getattr(sys, '_MEIPASS', os.path.abspath(os.path.dirname(__file__)))
 data_path = os.path.abspath(os.path.join(bundle_dir, 'vax_testing_input.xlsx'))
@@ -64,6 +64,65 @@ df2 = pd.DataFrame(columns=[
 'minimum_age',
 ])
 print(df2.head())
+'''
+
+
+#import latest data to be converted. This is df1
+#need string, not directory, for glob to work.
+path = os.getcwd() + "\\input\\" + "*.xlsx"
+print(path)
+list_of_files = glob.glob(path) # * means all if need specific format then *.csv
+latest_file = max(list_of_files, key=os.path.getmtime)
+#read latest xlsx file in directory.
+print(f"latest file: {latest_file}")
+df1 = pd.read_excel(latest_file, skiprows=3)
+print("df1:")
+df1.info()
+
+#import answer df2.
+second_path = os.getcwd() + "\\samples\\" + "2021-01-06 CastLight update example.xlsx"
+list_of_files = glob.glob(second_path)
+answer_template_path = max(list_of_files, key=os.path.getmtime)
+print(answer_template_path)
+#df2 = pd.read_excel(answer_template_path)
+#df2 = df2.truncate()
+df2 = pd.DataFrame(columns=[
+'flag', 
+'unique_id', 
+'id', 
+'site_name', 
+'state', 
+'county', 
+'address', 
+'city', 
+'zip_code', 
+'phone_number', 
+'testing_status', 
+'appointment_required',
+'physician_order_required',
+'screening_required',
+'restrictions_apply',
+'restriction_details',
+'type_of_center',
+'rapid_testing',
+'non_rapid_testing',
+'guidelines',
+'provider_url',
+'antibody_testing',
+'monday',
+'tuesday',
+'wednesday',
+'thursday',
+'friday',
+'saturday',
+'sunday',
+'latitude',
+'longitude',
+'cost_of_test',
+'open_date',
+'close_date',
+'minimum_age',
+])
 
 #xfer fields
 h_and_h_location = [f"NYC Health + Hospitals/{x}" for x in df1['Location']]
@@ -71,18 +130,18 @@ h_and_h_location = [f"NYC Health + Hospitals/{x}" for x in df1['Location']]
 df2['site_name'] = h_and_h_location
 #df2= df2.assign('site_name'= lambda x: )
 def convert_borough_to_county(boro):
-    boro = str.strip(boro)
-    if boro == "Manhattan":
+    boro = str.strip(boro).lower()
+    if boro == "manhattan":
         return "New York"
-    elif boro == "Brooklyn":
+    elif boro == "brooklyn":
         return "Kings"
-    elif boro == "Queens":
+    elif boro == "queens":
         return "Queens"
-    elif boro == "Bronx":
+    elif boro == "bronx":
         return "Bronx"
-    elif boro == "Staten Island":
+    elif boro == "staten island":
         return "Richmond"
-    elif boro == "Flushing":
+    elif boro == "flushing":
         return "Queens"
     else:
         raise Exception(f"{boro} is not a borough!")
@@ -115,9 +174,10 @@ df2['guidelines'] = df1['Test Type']
 
 #days of the week
 #get the date on the sheet
-this_date = pd.read_excel(data_path, nrows=1, header=None)[4]
+this_date = pd.read_excel(latest_file, nrows=1, header=None)[3]
 this_date = this_date[0]
 #find the monday of the week.
+#parsed_date = datetime.strptime(this_date, "%m/%d/%Y")
 year, week_num, day_of_week = this_date.isocalendar()
 
 #assign variables mapping the days to dates
@@ -199,6 +259,7 @@ df2["cost_of_test"] = 0.0
 
 #print("df2")
 print(df2.info())
+output_path = output_path = os.path.join(os.getcwd(), "output", f"mobile_testing_sites_{this_date.strftime('%Y-%m-%d')}.csv")
 df2.to_csv(f"mobile_testing_sites_{this_date.strftime('%Y-%m-%d')}.csv")
 
 print("press enter to exit")
