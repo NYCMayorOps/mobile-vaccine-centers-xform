@@ -16,6 +16,6 @@ This script has been written for Python 3.7 and 3.8. Place the latest CSV into t
 
 The program will search for the latest XLSX file and will attempt to parse it. If you get an error, it is probably because there is a typo in the city names, a value is missing, or the date is in the wrong column. To fix the date in the wrong column, you can either move the date in the XLSX, or you can modify the source code.
 The line that modifies the column to take the date from is here:
-https://github.com/NYCMayorOps/mobile-vaccine-centers-xform/blob/9b720260e33721cafab5b49eeb4f86979f6e79f8/conversion_script_3_8.py#L118 . The column is 0 indexed, so column E is 4.
+[this_date = pd.read_excel(latest_file, nrows=1, header=None)[4]](https://github.com/NYCMayorOps/mobile-vaccine-centers-xform/blob/9b720260e33721cafab5b49eeb4f86979f6e79f8/conversion_script_3_8.py#L118) . The column is 0 indexed, so column E is 4.
 
 
