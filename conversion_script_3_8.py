@@ -115,7 +115,7 @@ df2['guidelines'] = df1['Test Type']
 
 #days of the week
 #get the date on the sheet
-this_date = pd.read_excel(latest_file, nrows=1, header=None)[4]
+this_date = pd.read_excel(latest_file, nrows=1, header=None)[3]
 this_date = this_date[0]
 #find the monday of the week.
 #parsed_date = datetime.strptime(this_date, "%m/%d/%Y")
