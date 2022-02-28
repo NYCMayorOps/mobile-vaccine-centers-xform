@@ -150,12 +150,12 @@ df2['county'] = pd.Series(county_series)
 #aise Exception("stop here")
 df2['address'] = df1['Address']
 
-#get city from zipcode
+#get city from zipcode#get city from zipcode
 zipcodes_df = pd.read_csv(os.getcwd() + "\\lookup\\us_zipcodes_by_city.csv")
 zipcodes_df = zipcodes_df[['zip_code', 'default_city']]
-df3 = pd.merge(df1, zipcodes_df, left_on='Zip', right_on='zip_code', how='inner')
-df2['city'] = df3['default_city']
+city_dict = dict(zip( zipcodes_df.zip_code, zipcodes_df.default_city,))
 df2['zip_code'] = df1['Zip']
+df2['city'] = df2['zip_code'].map(city_dict)
 
 #rapid test. Search for text "rapid" in df1['Test Type']
 def is_rapid(text):
@@ -236,7 +236,7 @@ df2 = assign_day(df1, df2, 'sunday', my_daterange)
 print(df2[['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']])
 
 df2['open_date'] = df1['Start Date']
-df2['close_date'] = df1['End Date']
+df2['close_date'] = df1['End Date for Castlight']
 df2['minimum_age'] = df1['Age']
 
 #constant fields

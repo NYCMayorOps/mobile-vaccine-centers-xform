@@ -16,7 +16,7 @@ latest_file = max(list_of_files, key=os.path.getmtime)
 #read latest xlsx file in directory.
 print(f"latest file: {latest_file}")
 df1 = pd.read_excel(latest_file, skiprows=3)
-print("df1:")
+#print("df1:")
 df1.info()
 
 #import answer df2.
@@ -94,9 +94,10 @@ df2['address'] = df1['Address']
 #get city from zipcode
 zipcodes_df = pd.read_csv(os.getcwd() + "\\lookup\\us_zipcodes_by_city.csv")
 zipcodes_df = zipcodes_df[['zip_code', 'default_city']]
-df3 = pd.merge(df1, zipcodes_df, left_on='Zip', right_on='zip_code', how='inner')
-df2['city'] = df3['default_city']
+
+city_dict = dict(zip( zipcodes_df.zip_code, zipcodes_df.default_city,))
 df2['zip_code'] = df1['Zip']
+df2['city'] = df2['zip_code'].map(city_dict)
 
 #rapid test. Search for text "rapid" in df1['Test Type']
 def is_rapid(text):
@@ -115,7 +116,8 @@ df2['guidelines'] = df1['Test Type']
 
 #days of the week
 #get the date on the sheet
-this_date = pd.read_excel(latest_file, nrows=1, header=None)[3]
+this_date = pd.read_excel(latest_file, nrows=1, header=None)[4]
+print(f"this date: {this_date}")
 this_date = this_date[0]
 #find the monday of the week.
 #parsed_date = datetime.strptime(this_date, "%m/%d/%Y")
@@ -191,7 +193,7 @@ df2 = assign_day(df1, df2, 'sunday', my_daterange)
 print(df2[['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']])
 
 df2['open_date'] = df1['Start Date']
-df2['close_date'] = df1['End Date']
+df2['close_date'] = df1['End Date for Castlight']
 df2['minimum_age'] = df1['Age']
 
 #constant fields
